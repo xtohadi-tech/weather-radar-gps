@@ -298,33 +298,69 @@ def render_weather(lat: float, lon: float, data: dict) -> str:
 
     # ── Mini rain radar (12H) ─────────────────────────────────────────────
     hrly_time  = hrly.get("time", [])
-    hrly_prcp  = hrly.get("precipitation", [])
+    hrly_prcp  = hrly.get("precipitation", []) or hrly.get("precipitation_probability", [])
     now_idx    = 0
     for i, t in enumerate(hrly_time):
-        if datetime.fromisoformat(t).hour == datetime.now().hour:
-            now_idx = i
-            break
+        try:
+            if datetime.fromisoformat(t).hour == datetime.now().hour:
+                now_idx = i
+                break
+        except:
+            pass
 
-    radar_cells = []
+    # Grid radar 4 rows x 6 cols = 24 hours
+    def rain_bar(precip: Optional[float], height: int = 4) -> list[str]:
+        blocks = ["█", "▄", "░", "·"]
+        if precip is None or precip < 0.05:
+            h = 0
+        elif precip < 0.5:
+            h = 1
+        elif precip < 2.0:
+            h = 2
+        elif precip < 10.0:
+            h = 3
+        else:
+            h = 4
+        bar = []
+        for i in range(height):
+            if h > (height - 1 - i):
+                bar.append(blocks[min(i, len(blocks)-1)])
+            else:
+                bar.append(" ")
+        return bar
+
+    radar_rows = [[] for _ in range(4)]
     radar_labels = []
-    for i in range(now_idx, min(now_idx + 12, len(hrly_prcp))):
-        p = hrly_prcp[i]
-        radar_cells.append(rain_cell(p))
-        hr = datetime.fromisoformat(hrly_time[i]).hour
-        radar_labels.append(f"{hr:02d}")
-        if hr == datetime.now().hour:
-            radar_labels[-1] += "◀"
+    end_idx = min(now_idx + 24, len(hrly_prcp)) if hrly_prcp else now_idx
+    for i in range(now_idx, end_idx):
+        p = hrly_prcp[i] if i < len(hrly_prcp) else None
+        bar = rain_bar(p, height=4)
+        for row_idx, cell in enumerate(bar):
+            radar_rows[row_idx].append(cell)
+        hr = None
+        try:
+            hr = datetime.fromisoformat(hrly_time[i]).hour
+        except:
+            pass
+        if hr is not None:
+            label = f"{hr:02d}"
+        else:
+            label = "  "
+        radar_labels.append(label)
 
-    radar_row   = "  ".join(radar_cells)
-    label_row   = " ".join(lbl.rjust(3, " ") for lbl in radar_labels)
-
+    # Build grid
     rain_lines: list[str] = []
-    rain_lines.append(f"  {BOLD}{FG_CYAN}🌧  RADAR Hujan 12 jam ke depan{RESET}")
+    rain_lines.append(f"  {BOLD}{FG_CYAN}🌧  RADAR HUJAN 24 jam ke depan{RESET}")
     rain_lines.append(f"  {DIM}{'─' * 50}{RESET}")
-    rain_lines.append(f"  {FG_DIM}{label_row}{RESET}")
-    rain_lines.append(f"  {radar_row}")
+    label_row = "   " + " ".join(lbl[:2].rjust(2, " ") for lbl in radar_labels[:24:2])
+    rain_lines.append(f"  {DIM}{label_row}{RESET}")
+
+    # 4-bar display
+    for row in radar_rows:
+        rain_lines.append("  " + "  ".join(row))
+
     rain_lines.append("")
-    lines.append(draw_card("\n".join(rain_lines), "─── PREDIKSI CEMARAN ───", FG_CYAN))
+    lines.append(draw_card("\n".join(rain_lines), "─── RADAR HUJAN ───", FG_CYAN))
     lines.append("")
 
     # ── 3-day forecast ────────────────────────────────────────────────────
