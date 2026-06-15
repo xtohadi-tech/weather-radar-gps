@@ -208,8 +208,9 @@ function render(d) {
   // hourly 8 next hours
   const tbody = el('hourlyBody'); tbody.innerHTML = '';
   const now = new Date().toISOString().slice(0,10);
+  const currentHour = new Date().getHours();
   const idx = (d.hourly?.time||[]).findIndex(t => t.startsWith(now));
-  const start = Math.max(idx,0);
+  const start = Math.max(idx + currentHour, 0);
   for (let i = start; i < Math.min(start+8, d.hourly.time.length); i++) {
     const hh = new Date(d.hourly.time[i]).getHours();
     const t = Math.round(d.hourly.temperature_2m[i]);
@@ -231,11 +232,10 @@ function render(d) {
     dt.innerHTML += `<tr><td>${label}</td><td>${icon3} ${desc3}</td><td>${max}°</td><td>${min}°</td><td>${sum} mm</td></tr>`;
   });
 
-  // rain 24h
+  // rain 24h from now
   const times = d.hourly?.time || [];
-  const start2 = times.findIndex(t => t.startsWith(now));
   const vals = [];
-  for (let i = Math.max(start2,0); i < Math.min(start2+24, times.length); i++) {
+  for (let i = Math.max(idx,0); i < Math.min(idx+24, times.length); i++) {
     vals.push(d.hourly.precipitation_probability[i] || 0);
   }
   const row = el('rainRow'); row.innerHTML = '';
@@ -264,16 +264,16 @@ async function startCity(name) {
 
 async function startGPS() {
   try {
-    setStatus('Mengambil GPS (maks 10 detik)...', 'accent');
+    setStatus('Mengambil GPS akurat (high accuracy)...', 'accent');
     const pos = await new Promise((resolve, reject) => {
       if (!navigator.geolocation) return reject(new Error('GPS tidak didukung browser'));
       navigator.geolocation.getCurrentPosition(
         (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
-        (e) => reject(new Error('GPS ditolak / timeout')),
-        { timeout: 10000, maximumAge: 60000 }
+        (e) => reject(new Error('GPS ditolak / timeout (cek izin lokasi)')),
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     });
-    el('locPill').textContent = `GPS • ${pos.lat.toFixed(2)}, ${pos.lon.toFixed(2)}`;
+    el('locPill').textContent = `GPS • ${pos.lat.toFixed(4)}, ${pos.lon.toFixed(4)}`;
     setStatus('Mengambil data cuaca...', 'accent');
     const data = await weather(pos.lat, pos.lon);
     setStatus('Sumber: Open-Meteo • Lokasi via GPS', 'ok');
