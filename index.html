@@ -3,142 +3,211 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Weather Radar GPS</title>
+<title>Weather Radar GPS Pro</title>
 <style>
   :root {
-    --bg: #0e1116;
-    --panel: #161b22;
-    --border: #22272e;
-    --muted: #8b949e;
-    --text: #e6edf3;
-    --blue: #58a6ff;
-    --green: #3fb950;
-    --red: #f85149;
-    --yellow: #d29922;
-    --cyan: #39c5cf;
-    --font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    --bg: #0a0d14;
+    --panel: #111621;
+    --card: #141c2b;
+    --border: #1e2a3a;
+    --muted: #7a8ba3;
+    --text: #dce6f2;
+    --blue: #4da6ff;
+    --green: #4ade80;
+    --red: #ff4d6d;
+    --yellow: #fbbf24;
+    --purple: #a78bfa;
+    --glass: rgba(20, 28, 43, 0.85);
   }
   * { box-sizing: border-box; }
   html, body {
     margin: 0;
-    background: radial-gradient(1200px 600px at 10% -10%, #0c1f2e 0%, #0e1116 40%);
+    background:
+      radial-gradient(ellipse 80% 50% at 20% -10%, #0d2137, transparent),
+      radial-gradient(ellipse 60% 50% at 80% 110%, #0f1b2d, transparent),
+      var(--bg);
     color: var(--text);
-    font-family: var(--font);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 920px; margin: 0 auto; padding: 18px; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
   .topbar {
     display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-    padding: 10px 12px; border: 1px solid var(--border); background: var(--panel); border-radius: 10px;
+    padding: 14px 16px; border: 1px solid var(--border); background: var(--panel);
+    border-radius: 14px; backdrop-filter: blur(10px);
   }
-  .brand { display: flex; align-items: center; gap: 10px; }
-  .brand b { color: var(--blue); letter-spacing: 0.5px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, #4da6ff, #7c3aed);
+    display: grid; place-items: center; font-size: 20px;
+  }
+  .title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  .subtitle { color: var(--muted); font-size: 11px; margin-top: 2px; letter-spacing: 0.2px; }
+  .statusbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .pill {
-    font-size: 11px; color: var(--muted); border: 1px solid var(--border); padding: 2px 8px; border-radius: 999px; background: #0d1117;
+    font-size: 11px; color: var(--muted); border: 1px solid var(--border); padding: 3px 10px;
+    border-radius: 999px; background: #080c14; letter-spacing: 0.3px;
   }
-  .search { display: flex; gap: 8px; margin-top: 12px; }
+  .pill.ok { color: var(--green); border-color: #1a3a2a; }
+  .pill.warn { color: var(--yellow); border-color: #3a3010; }
+  .pill.err { color: var(--red); border-color: #3a1015; }
+
+  .search {
+    display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;
+  }
   .search input {
-    flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
-    background: #0d1117; color: var(--text); outline: none; font-family: inherit;
+    flex: 1; min-width: 200px; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border);
+    background: #0a0f18; color: var(--text); outline: none; font: inherit; font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .search input:focus { border-color: #388bfd66; box-shadow: 0 0 0 3px #0d111799, 0 0 0 5px #388bfd22; }
+  .search input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
   .btn {
-    padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: #21262d; color: var(--text); cursor: pointer; font-family: inherit;
+    padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border);
+    background: linear-gradient(180deg, #1a2538, #141c28); color: var(--text);
+    cursor: pointer; font: inherit; font-size: 13px; font-weight: 500;
+    transition: transform 0.05s, filter 0.2s; user-select: none;
   }
-  .btn:hover { background: #292e36; }
-  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 14px; }
-  @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } }
+  .btn:hover { filter: brightness(1.15); }
+  .btn:active { transform: scale(0.98); }
+  .btn.primary {
+    background: linear-gradient(180deg, #2563eb, #1d4ed8); border-color: #1e40af;
+  }
+  .grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+    gap: 12px; 
+    margin-top: 14px; 
+  }
   .card {
-    border: 1px solid var(--border); background: linear-gradient(180deg, #111820 0%, #0f141c 100%); border-radius: 10px; padding: 14px;
+    border: 1px solid var(--border); background: linear-gradient(180deg, #141c2b, #111827);
+    border-radius: 14px; padding: 16px; position: relative; overflow: hidden;
   }
-  .card h3 { margin: 0 0 8px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
-  .big { font-size: 34px; font-weight: 700; }
+  .card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(77,166,255,0.3), transparent);
+  }
+  .card h3 { 
+    margin: 0 0 10px; font-size: 11px; color: var(--muted); 
+    text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;
+  }
+  .big { font-size: 42px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
   .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
-  .accent { color: var(--blue); }
   .ok { color: var(--green); }
   .warn { color: var(--yellow); }
   .err { color: var(--red); }
-  .row { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
-  th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid #161b22; color: var(--text); }
-  th { color: var(--muted); font-weight: 500; }
-  .bar { height: 10px; background: #21262d; border-radius: 999px; overflow: hidden; }
-  .fill { height: 100%; background: linear-gradient(90deg, #2a7fff, #7fd2ff); border-radius: 999px; }
-  .rain {
-    height: 14px; display: flex; gap: 2px; margin-top: 10px;
+  .muted { color: var(--muted); }
+  .blue { color: var(--blue); }
+  .tag { 
+    display: inline-block; padding: 3px 8px; border-radius: 6px; 
+    background: #0a0f18; border: 1px solid var(--border); 
+    color: var(--muted); font-size: 11px; font-weight: 500;
   }
-  .rain div { flex: 1; border-radius: 2px; background: #2f3542; }
-  .rain .r1 { background: linear-gradient(180deg,#3fb950,#2ea043); }
-  .rain .r2 { background: linear-gradient(180deg,#58a6ff,#1f6feb); }
-  .rain .r3 { background: linear-gradient(180deg,#a371f7,#8a2be2); }
-  .rain .r4 { background: linear-gradient(180deg,#f85149,#da3633); }
-  .status { min-height: 18px; font-size: 12px; color: var(--muted); margin-top: 6px; }
-  .hidden { display: none; }
-  .tag { display: inline-block; padding: 2px 6px; border-radius: 4px; background: #0d1117; border: 1px solid var(--border); color: var(--muted); font-size: 11px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  th, td { text-align: left; padding: 7px 4px; border-bottom: 1px solid #141c2b; }
+  th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .bar { height: 8px; background: #1a2538; border-radius: 999px; overflow: hidden; }
+  .fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 999px; }
+  .rain-grid {
+    display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; margin-top: 12px;
+  }
+  .rain-cell {
+    height: 22px; border-radius: 3px; background: #1a2538; transition: background 0.2s;
+    cursor: default;
+  }
+  .rain-1 { background: linear-gradient(180deg, #22c55e, #16a34a); }
+  .rain-2 { background: linear-gradient(180deg, #3b82f6, #2563eb); }
+  .rain-3 { background: linear-gradient(180deg, #a855f7, #7e22ce); }
+  .rain-4 { background: linear-gradient(180deg, #ef4444, #b91c1c); }
+  .rain-label { color: var(--muted); font-size: 10px; display: flex; justify-content: space-between; }
+  .status { min-height: 20px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .loc-accuracy { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .section-full { grid-column: 1 / -1; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  @media (max-width: 600px) { 
+    .grid-2 { grid-template-columns: 1fr; } 
+    .big { font-size: 32px; }
+  }
+  .muted { color: var(--muted); }
+  .fade { animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap fade">
   <div class="topbar">
     <div class="brand">
+      <div class="logo">🌤</div>
       <div>
-        <b>Weather Radar GPS</b>
-        <div class="sub">Open-Meteo • geolocation • rain grid • no API key</div>
+        <div class="title">Weather Radar GPS Pro</div>
+        <div class="subtitle">Open-Meteo • GPS High Accuracy • 24h Rain Grid • Real-time Data</div>
       </div>
     </div>
-    <div class="row">
+    <div class="statusbar">
       <span class="pill" id="clock">--:--</span>
       <span class="pill" id="locPill">IP lokalisasi aktif</span>
+      <span class="pill ok" id="accPill" style="display:none">GPS akurasi ±--m</span>
     </div>
   </div>
 
   <div class="search">
     <input id="city" placeholder="Cari kota / lokasi..." value="Tokyo" />
-    <button class="btn" id="goBtn">Cari</button>
-    <button class="btn" id="gpsBtn">GPS</button>
-    <button class="btn" id="ipBtn">IP</button>
+    <button class="btn primary" id="goBtn">🔍 Cari</button>
+    <button class="btn" id="gpsBtn">📍 GPS</button>
+    <button class="btn" id="ipBtn">🌐 IP</button>
+    <button class="btn" id="refreshBtn">🔄 Refresh GPS</button>
   </div>
   <div class="status" id="status"></div>
 
-  <div class="grid">
+  <div class="grid" id="mainGrid">
+    <!-- Current -->
     <div class="card">
       <h3>Sekarang</h3>
-      <div class="row">
-        <div class="big" id="temp">--°</div>
-        <div class="sub" id="desc">Memuat...</div>
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+        <div>
+          <div class="big" id="temp">--°</div>
+          <div class="sub" id="desc">Memuat...</div>
+        </div>
+        <div style="font-size:48px; line-height:1;" id="icon">🌦</div>
       </div>
-      <div class="sub" id="feels">Terasa: --°</div>
-      <div style="margin-top:10px" class="sub">
-        <span class="tag" id="hum">Kelembapan --%</span>
-        <span class="tag" id="wind">Angin -- km/h</span>
-        <span class="tag" id="pres">Tekanan -- hPa</span>
+      <div style="margin-top:12px" class="sub">
+        <span class="tag" id="feels">Terasa --°</span>
+        <span class="tag" id="hum">💧 --%</span>
+        <span class="tag" id="wind">💨 -- km/h</span>
+        <span class="tag" id="pres">🔻 -- hPa</span>
       </div>
+      <div id="sunInfo" class="sub" style="margin-top:8px"></div>
     </div>
 
+    <!-- 24h Rain -->
     <div class="card">
-      <h3>Proyeksi 24 jam (hujan)</h3>
-      <div class="rain" id="rainRow"></div>
-      <div class="sub" style="margin-top:8px" id="rainSummary">--</div>
+      <h3>🌧️ Curah Hujan 24 Jam</h3>
+      <div class="rain-grid" id="rainGrid"></div>
+      <div class="rain-label" style="margin-top:8px">
+        <span>0%</span><span>50%</span><span>100%</span>
+      </div>
+      <div class="sub" id="rainSummary" style="margin-top:8px">--</div>
     </div>
 
-    <div class="card">
-      <h3>Per Jam</h3>
+    <!-- Hourly -->
+    <div class="card section-full">
+      <h3>📅 Per Jam (8 jam ke depan)</h3>
       <div style="overflow:auto">
       <table>
-        <thead><tr><th>Waktu</th><th>Cuaca</th><th>Suhu</th><th>Hujan %</th></tr></thead>
+        <thead><tr><th>Waktu</th><th>Cuaca</th><th>Suhu</th><th>Hujan %</th><th>Angin</th></tr></thead>
         <tbody id="hourlyBody"></tbody>
       </table>
       </div>
     </div>
 
-    <div class="card">
-      <h3>3 Hari</h3>
-      <div style="overflow:auto">
-      <table>
-        <thead><tr><th>Hari</th><th>Cuaca</th><th>Max</th><th>Min</th><th>Curah</th></tr></thead>
-        <tbody id="dailyBody"></tbody>
-      </table>
-      </div>
+    <!-- Daily -->
+    <div class="card section-full">
+      <h3>📆 3 Hari ke Depan</h3>
+      <div class="grid-2" id="dailyGrid"></div>
     </div>
   </div>
 </div>
@@ -153,13 +222,28 @@ function setStatus(msg, type='muted') {
 }
 function pad(n){ return String(n).padStart(2,'0'); }
 
+const C = {
+  0:['Cerah','☀️'],1:['Cerah','🌤'],2:['Berawan','⛅'],3:['Mendung','☁️'],
+  45:['Berkabut','🌫'],48:['Kabut tebal','🌫'],
+  51:['Gerimis','🌦'],53:['Hujan','🌧'],55:['Lebat','🌧'],
+  56:['Beku','🧊'],57:['Beku lebat','🧊'],
+  61:['Hujan ringan','🌧'],63:['Hujan','🌧'],65:['Lebat','🌧'],
+  66:['Beku','🧊'],67:['Beku lebat','🧊'],
+  71:['Salju ringan','❄️'],73:['Salju','❄️'],75:['Salju lebat','❄️'],
+  77:['Butir salju','❄️'],
+  80:['Semburan','🌦'],81:['Semburan','🌧'],82:['Lebat','🌧'],
+  85:['Salju rintik','🌨'],86:['Salju lebat','🌨'],
+  95:['Badai petir','⛈'],96:['Petir + es','⛈'],99:['Petir + es','⛈']
+};
+function info(code){ return C[code] || ['Cuaca', '🌦']; }
+
 async function geocode(name) {
   const r = await fetch(`${GEO}?name=${encodeURIComponent(name)}&count=1&language=id&format=json`);
   if (!r.ok) throw new Error('Gagal cari lokasi');
   const d = await r.json();
   if (!d.results?.length) throw new Error('Kota tidak ditemukan');
   const x = d.results[0];
-  el('locPill').textContent = `${x.name}${x.country?', ':''}${x.country||''}`;
+  el('locPill').textContent = `📍 ${x.name}${x.country?', ':''}${x.country||''}`;
   return { lat: x.latitude, lon: x.longitude, city: x.name, country: x.country };
 }
 
@@ -167,16 +251,16 @@ async function ipLoc() {
   const r = await fetch('https://ipapi.co/json/');
   if (!r.ok) throw new Error('IP lokasi gagal');
   const d = await r.json();
-  el('locPill').textContent = `IP • ${d.city||''}${d.country?', ':''}${d.country||''}`;
+  el('locPill').textContent = `🌐 IP • ${d.city||''}${d.country?', ':''}${d.country||''}`;
   return { lat: Number(d.latitude), lon: Number(d.longitude), city: d.city || 'Lokasi Anda', country: d.country_name };
 }
 
 async function weather(lat, lon) {
   const p = new URLSearchParams({
     latitude: lat, longitude: lon,
-    current: 'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,surface_pressure',
-    hourly: 'temperature_2m,precipitation_probability,weather_code',
-    daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum',
+    current: 'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,surface_pressure',
+    hourly: 'temperature_2m,precipitation_probability,weather_code,wind_speed_10m',
+    daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset',
     timezone: 'auto', forecast_days: 3
   });
   const r = await fetch(`${API}?${p}`);
@@ -184,28 +268,37 @@ async function weather(lat, lon) {
   return r.json();
 }
 
-function codeInfo(code) {
-  const m = {
-    0:['Cerah','☀️'],1:['Cerah','🌤'],2:['Berawan','⛅'],3:['Mendung','☁️'],
-    45:['Berkabut','🌫'],48:['Kabut tebal','🌫'],
-    51:['Gerimis','🌦'],53:['Hujan','🌧'],55:['Lebat','🌧'],
-    61:['Hujan ringan','🌧'],63:['Hujan','🌧'],65:['Lebat','🌧'],
-    80:['Semburan','🌦'],81:['Semburan','🌧'],82:['Lebat','🌧']
-  };
-  return m[code] || ['Cuaca', '🌦'];
+function degToCompass(num) {
+  const val = Math.floor((num / 22.5) + 0.5);
+  const arr = ['U','UU','T','TT','S','SS','B','BB'];
+  return arr[(val % 8)];
+}
+
+function formatSun(timeStr) {
+  const d = new Date(timeStr);
+  return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 }
 
 function render(d) {
   const c = d.current || {};
-  const [desc, icon] = codeInfo(c.weather_code);
+  const [desc, icon] = info(c.weather_code);
   el('temp').textContent = `${Math.round(c.temperature_2m||0)}°`;
-  el('desc').textContent = `${icon} ${desc}`;
-  el('feels').textContent = `Terasa: ${Math.round(c.apparent_temperature||0)}°`;
-  el('hum').textContent = `Kelembapan ${c.relative_humidity_2m??'--'}%`;
-  el('wind').textContent = `Angin ${Math.round(c.wind_speed_10m||0)} km/h`;
-  el('pres').textContent = `Tekanan ${Math.round(c.surface_pressure||0)} hPa`;
+  el('desc').textContent = `${desc}`;
+  el('icon').textContent = icon;
+  el('feels').textContent = `Terasa ${Math.round(c.apparent_temperature||0)}°`;
+  el('hum').textContent = `💧 ${c.relative_humidity_2m??'--'}%`;
+  const windSpd = Math.round(c.wind_speed_10m||0);
+  const windDir = degToCompass(c.wind_direction_10m);
+  el('wind').textContent = `💨 ${windSpd} km/j ${windDir}`;
+  el('pres').textContent = `🔻 ${Math.round(c.surface_pressure||0)} hPa`;
 
-  // hourly 8 next hours
+  // sun
+  const sunEl = el('sunInfo');
+  if (d.daily?.sunrise?.[0] && d.daily?.sunset?.[0]) {
+    sunEl.innerHTML = `☀️ Terbit ${formatSun(d.daily.sunrise[0])} &nbsp; 🌙 Terbenam ${formatSun(d.daily.sunset[0])}`;
+  }
+
+  // hourly 8 jam
   const tbody = el('hourlyBody'); tbody.innerHTML = '';
   const now = new Date().toISOString().slice(0,10);
   const currentHour = new Date().getHours();
@@ -213,99 +306,121 @@ function render(d) {
   const start = Math.max(idx + currentHour, 0);
   for (let i = start; i < Math.min(start+8, d.hourly.time.length); i++) {
     const hh = new Date(d.hourly.time[i]).getHours();
+    const mn = new Date(d.hourly.time[i]).getMinutes();
     const t = Math.round(d.hourly.temperature_2m[i]);
-    const [desc2, icon2] = codeInfo(d.hourly.weather_code[i]);
+    const [d2, ic2] = info(d.hourly.weather_code[i]);
     const rain = Math.round(d.hourly.precipitation_probability[i]||0);
-    tbody.innerHTML += `<tr><td>${pad(hh)}:00</td><td>${icon2} ${desc2}</td><td>${t}°</td><td>${rain}%</td></tr>`;
+    const w = Math.round(d.hourly.wind_speed_10m[i]||0);
+    tbody.innerHTML += `<tr><td>${pad(hh)}:${pad(mn)}</td><td>${ic2} ${d2}</td><td><b>${t}°</b></td><td>${rain}%</td><td>${w} km/j</td></tr>`;
   }
 
-  // daily 3 days
-  const dt = el('dailyBody'); dt.innerHTML = '';
+  // daily 3 hari
+  const dg = el('dailyGrid'); dg.innerHTML = '';
   const days = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
   (d.daily?.time||[]).forEach((date, i) => {
     const dd = new Date(`${date}T00:00:00`);
     const label = i===0 ? 'Hari ini' : days[dd.getDay()];
-    const [desc3, icon3] = codeInfo(d.daily.weather_code[i]);
+    const [d3, ic3] = info(d.daily.weather_code[i]);
     const max = Math.round(d.daily.temperature_2m_max[i]);
     const min = Math.round(d.daily.temperature_2m_min[i]);
     const sum = Math.round(d.daily.precipitation_sum[i]||0);
-    dt.innerHTML += `<tr><td>${label}</td><td>${icon3} ${desc3}</td><td>${max}°</td><td>${min}°</td><td>${sum} mm</td></tr>`;
+    const ris = d.daily.sunrise?.[i] ? formatSun(d.daily.sunrise[i]) : '--';
+    const sets = d.daily.sunset?.[i] ? formatSun(d.daily.sunset[i]) : '--';
+    dg.innerHTML += `
+      <div style="border:1px solid var(--border); border-radius:10px; padding:10px; background:#0d1420;">
+        <div style="font-weight:600; margin-bottom:6px;">${label}</div>
+        <div style="font-size:24px; margin-bottom:6px;">${ic3} ${d3}</div>
+        <div style="font-size:12px; color:var(--muted)">Max <b style="color:var(--red)">${max}°</b> / Min <b style="color:var(--blue)">${min}°</b></div>
+        <div style="font-size:12px; color:var(--muted); margin-top:4px;">🌧 ${sum} mm</div>
+        <div style="font-size:11px; color:var(--muted); margin-top:4px;">☀️ ${ris} 🌙 ${sets}</div>
+      </div>
+    `;
   });
 
-  // rain 24h from now
+  // 24h rain grid
   const times = d.hourly?.time || [];
   const vals = [];
   for (let i = Math.max(idx,0); i < Math.min(idx+24, times.length); i++) {
     vals.push(d.hourly.precipitation_probability[i] || 0);
   }
-  const row = el('rainRow'); row.innerHTML = '';
-  const color = (v) => {
-    if (v < 20) return 'r1';
-    if (v < 50) return 'r2';
-    if (v < 80) return 'r3';
-    return 'r4';
-  };
-  vals.forEach(v => { row.innerHTML += `<div class="${color(v)}" title="${v}%"></div>`; });
-  el('rainSummary').textContent = `Kemungkinan hujan 24 jam: rata-rata ${Math.round(vals.reduce((a,b)=>a+b,0)/Math.max(vals.length,1))}%`;
+  const row = el('rainGrid'); row.innerHTML = '';
+  vals.forEach((v, i) => {
+    const cls = v < 20 ? '' : v < 50 ? 'rain-1' : v < 80 ? 'rain-2' : 'rain-3' ;
+    const tip = `${Math.round(v)}% • ${new Date(times[idx+i]||0).getHours()}:00`;
+    row.innerHTML += `<div class="rain-cell ${cls}" title="${tip}"></div>`;
+  });
+  const avg = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
+  el('rainSummary').textContent = `Rata-rata kemungkinan hujan 24 jam: ${avg}%`;
 }
 
 async function startCity(name) {
   try {
-    setStatus('Mencari lokasi...', 'accent');
+    setStatus('Mencari lokasi...', 'blue');
     const loc = await geocode(name);
-    setStatus('Mengambil data cuaca...', 'accent');
+    setStatus('Mengambil data cuaca...', 'blue');
     const data = await weather(loc.lat, loc.lon);
     setStatus(`Sumber: Open-Meteo • Lokasi: ${loc.city}`, 'ok');
     render(data);
-  } catch (e) {
-    setStatus(e.message, 'err');
+  } catch (e) { setStatus(e.message, 'err'); }
+}
+
+function setAcc(acc) { 
+  if (acc != null) {
+    el('accPill').style.display = 'inline-block';
+    el('accPill').textContent = `GPS ±${Math.round(acc)}m`;
+    el('accPill').className = 'pill ' + (acc < 30 ? 'ok' : acc < 100 ? 'warn' : 'err');
   }
 }
 
+function watchGPS() {
+  if (!navigator.geolocation) return setStatus('GPS tidak didukung browser', 'err');
+  setStatus('🛰️ Mencari GPS dengan akurasi tinggi... cek izin lokasi di browser', 'blue');
+  const id = navigator.geolocation.watchPosition(
+    (p) => {
+      setAcc(p.coords.accuracy);
+      el('locPill').textContent = `GPS • ${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`;
+      setStatus('GPS terkunci, mengambil data cuaca...', 'blue');
+      weather(p.coords.latitude, p.coords.longitude).then(d => {
+        setStatus('Sumber: Open-Meteo • GPS akurat', 'ok');
+        render(d);
+      }).catch(e => setStatus(e.message, 'err'));
+    },
+    (e) => {
+      setStatus(`GPS error: ${e.message}`, 'err');
+      el('accPill').style.display = 'none';
+    },
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+  );
+  return id;
+}
+
 async function startGPS() {
-  try {
-    setStatus('Mengambil GPS akurat (high accuracy)...', 'accent');
-    const pos = await new Promise((resolve, reject) => {
-      if (!navigator.geolocation) return reject(new Error('GPS tidak didukung browser'));
-      navigator.geolocation.getCurrentPosition(
-        (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
-        (e) => reject(new Error('GPS ditolak / timeout (cek izin lokasi)')),
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-      );
-    });
-    el('locPill').textContent = `GPS • ${pos.lat.toFixed(4)}, ${pos.lon.toFixed(4)}`;
-    setStatus('Mengambil data cuaca...', 'accent');
-    const data = await weather(pos.lat, pos.lon);
-    setStatus('Sumber: Open-Meteo • Lokasi via GPS', 'ok');
-    render(data);
-  } catch (e) {
-    setStatus(e.message, 'err');
-  }
+  const id = watchGPS();
+  // stop watching after 25s
+  setTimeout(() => navigator.geolocation.clearWatch(id), 25000);
 }
 
 async function startIP() {
   try {
-    setStatus('Melokasi via IP...', 'accent');
+    setStatus('Melokasi via IP...', 'blue');
     const loc = await ipLoc();
-    setStatus('Mengambil data cuaca...', 'accent');
+    setStatus('Mengambil data cuaca...', 'blue');
     const data = await weather(loc.lat, loc.lon);
     setStatus('Sumber: Open-Meteo • Lokasi via IP', 'ok');
     render(data);
-  } catch (e) {
-    setStatus(e.message, 'err');
-  }
+  } catch (e) { setStatus(e.message, 'err'); }
 }
 
 el('goBtn').onclick = () => startCity(el('city').value.trim() || 'Tokyo');
 el('gpsBtn').onclick = startGPS;
 el('ipBtn').onclick = startIP;
+el('refreshBtn').onclick = startGPS;
 el('city').addEventListener('keydown', (e) => { if (e.key === 'Enter') startCity(el('city').value.trim() || 'Tokyo'); });
 
 setInterval(() => {
   const now = new Date();
   el('clock').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
 }, 1000);
-(new Date()).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
 startCity('Tokyo');
 </script>
 </body>
